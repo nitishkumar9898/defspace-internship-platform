@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Def Space Internship 2026 — Platform</title>
+<link rel="stylesheet" href="/static/design.css">
+</head>
+<body>
+<div class="shell">
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="topbar-logo">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <polygon points="11,2 20,18 2,18" fill="none" stroke="#3D7FFF" stroke-width="1.5"/>
+        <line x1="11" y1="2" x2="11" y2="18" stroke="#00C5B0" stroke-width="1"/>
+        <circle cx="11" cy="11" r="2" fill="#3D7FFF"/>
+      </svg>
+      Def Space Aero Platform
+      <span class="logo-badge">2026</span>
+    </div>
+    <span class="topbar-sep"></span>
+    <div class="topbar-meta">
+      <strong>Nitish Kumar Kannaujiya</strong><br>
+      24BECCS33 · B.Tech CSE (Cyber) · CUJ
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <div class="sidebar-label">Platform</div>
+    <a href="/index.html" class="sidebar-item active">
+      <span class="item-num">⌂</span> Dashboard
+    </a>
+    <div class="sidebar-label">Projects</div>
+    <a href="/p1.html" class="sidebar-item">
+      <span class="item-num">P1</span> CG &amp; Static Stability
+    </a>
+    <a href="/p2.html" class="sidebar-item">
+      <span class="item-num">P2</span> Neutral Point Analysis
+    </a>
+    <a href="/p3.html" class="sidebar-item">
+      <span class="item-num">P3</span> RC Trainer Aircraft
+    </a>
+    <a href="/p4.html" class="sidebar-item">
+      <span class="item-num">P4</span> Cropped Delta Wing UAV
+    </a>
+    <a href="/p5.html" class="sidebar-item">
+      <span class="item-num">P5</span> VTOL Drone Design
+    </a>
+    <a href="/p6.html" class="sidebar-item">
+      <span class="item-num">P6</span> GenAI Skill Analyzer
+    </a>
+    <div class="sidebar-label" style="margin-top:16px">API</div>
+    <a href="/api/docs" class="sidebar-item" target="_blank">
+      <span class="item-num">🗐</span> API Docs (Swagger)
+    </a>
+    <a href="/api/health" class="sidebar-item" target="_blank">
+      <span class="item-num">◉</span> Health Check
+    </a>
+  </nav>
+
+  <!-- Main content -->
+  <main class="main">
+    <div class="page-header">
+      <div class="breadcrumb">DEF SPACE SUMMER INTERNSHIP 2026 / DASHBOARD</div>
+      <h1>Aerodynamics &amp; Drone Design Platform</h1>
+      <p class="subtitle">Full-stack engineering analysis suite · FastAPI + SQLite + ML backend · Python NumPy / SciPy / Scikit-learn</p>
+    </div>
+
+    <!-- Status strip -->
+    <div class="alert alert-info" id="status-strip">
+      <span class="alert-icon">◌</span>
+      <span id="status-msg">Connecting to backend…</span>
+    </div>
+
+    <!-- KPI Row -->
+    <div class="grid-4 mb-6">
+      <div class="card card-accent-blue">
+        <div class="card-title">Projects</div>
+        <div class="card-value">6</div>
+        <div class="card-sub">Fully wired full-stack</div>
+      </div>
+      <div class="card card-accent-teal">
+        <div class="card-title">Backend</div>
+        <div class="card-value">FastAPI</div>
+        <div class="card-sub">Python · NumPy · SciPy</div>
+      </div>
+      <div class="card card-accent-amber">
+        <div class="card-title">ML Models</div>
+        <div class="card-value">4</div>
+        <div class="card-sub">MLP · GBR · LinReg · TF-IDF</div>
+      </div>
+      <div class="card card-accent-green">
+        <div class="card-title">Database</div>
+        <div class="card-value">SQLite</div>
+        <div class="card-sub">SQLAlchemy ORM · 6 tables</div>
+      </div>
+    </div>
+
+    <!-- Project grid -->
+    <div class="section-title">All Projects</div>
+    <div class="grid-3 mb-6" id="projects-grid">
+      <!-- Populated by JS -->
+    </div>
+
+    <!-- Tech stack -->
+    <div class="section-title">Technology Stack</div>
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header"><h3>Backend &amp; ML</h3></div>
+        <div class="panel-body">
+          <div class="stat-row"><span class="stat-key">Framework</span><span class="stat-val">FastAPI 0.115 + Uvicorn</span></div>
+          <div class="stat-row"><span class="stat-key">Language</span><span class="stat-val">Python 3.11+</span></div>
+          <div class="stat-row"><span class="stat-key">Database ORM</span><span class="stat-val">SQLAlchemy 2.0 / SQLite</span></div>
+          <div class="stat-row"><span class="stat-key">Scientific</span><span class="stat-val">NumPy 2.1 + SciPy 1.14</span></div>
+          <div class="stat-row"><span class="stat-key">ML Library</span><span class="stat-val">scikit-learn 1.5</span></div>
+          <div class="stat-row"><span class="stat-key">Optimiser</span><span class="stat-val">scipy.optimize (L-BFGS-B)</span></div>
+          <div class="stat-row"><span class="stat-key">Validation</span><span class="stat-val">Pydantic v2</span></div>
+          <div class="stat-row"><span class="stat-key">API Docs</span><span class="stat-val">OpenAPI / Swagger (auto)</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-header"><h3>Frontend &amp; Deployment</h3></div>
+        <div class="panel-body">
+          <div class="stat-row"><span class="stat-key">Frontend</span><span class="stat-val">Vanilla JS + custom CSS</span></div>
+          <div class="stat-row"><span class="stat-key">Charts</span><span class="stat-val">Chart.js 4.4.1</span></div>
+          <div class="stat-row"><span class="stat-key">Typography</span><span class="stat-val">Inter + JetBrains Mono</span></div>
+          <div class="stat-row"><span class="stat-key">Container</span><span class="stat-val">Docker + docker-compose</span></div>
+          <div class="stat-row"><span class="stat-key">Reverse Proxy</span><span class="stat-val">Nginx 1.25</span></div>
+          <div class="stat-row"><span class="stat-key">Deploy target</span><span class="stat-val">Render / Railway / VPS</span></div>
+          <div class="stat-row"><span class="stat-key">CORS</span><span class="stat-val">Configured (dev: *)</span></div>
+          <div class="stat-row"><span class="stat-key">Data format</span><span class="stat-val">JSON REST API</span></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="/js/api.js"></script>
+<script>
+const projects = [
+  { id:'p1', title:'CG & Static Stability', desc:'Flat plate wing CG analysis, static margin, ML stability scoring (LinearRegression, R²→check).', href:'/p1.html', accent:'blue' },
+  { id:'p2', title:'Neutral Point Analysis', desc:'Wing-tail NP computation using strip theory, polynomial regression ML model, stability charts.', href:'/p2.html', accent:'teal' },
+  { id:'p3', title:'RC Trainer Aircraft DBT', desc:'Design-Build-Test: specs, build log DB, flight test records, performance prediction.', href:'/p3.html', accent:'amber' },
+  { id:'p4', title:'Cropped Delta Wing UAV', desc:'Full alpha-sweep aerodynamics (SciPy), MLP neural network coefficient predictor, drag polar, trim analysis.', href:'/p4.html', accent:'blue' },
+  { id:'p5', title:'VTOL Drone Design', desc:'Hover power physics, Gradient Boosting flight-time model, scipy L-BFGS-B propeller optimiser.', href:'/p5.html', accent:'teal' },
+  { id:'p6', title:'GenAI Skill Analyzer', desc:'TF-IDF cosine similarity JD↔resume matching, skill extraction, 30-day learning plan.', href:'/p6.html', accent:'amber' },
+];
+
+document.getElementById('projects-grid').innerHTML = projects.map(p => `
+  <a href="${p.href}" class="panel" style="text-decoration:none;display:block;cursor:pointer;transition:transform .15s,box-shadow .15s;"
+     onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 32px rgba(0,0,0,.7)'"
+     onmouseout="this.style.transform='';this.style.boxShadow=''">
+    <div class="panel-header">
+      <h3>${p.title}</h3>
+      <span class="badge badge-${p.accent}">${p.id.toUpperCase()}</span>
+    </div>
+    <div class="panel-body">
+      <p style="font-size:13px;color:var(--tx-3);line-height:1.6">${p.desc}</p>
+      <div style="margin-top:12px">
+        <span class="btn btn-secondary btn-sm">Open →</span>
+      </div>
+    </div>
+  </a>
+`).join('');
+
+// Backend health check
+async function checkHealth() {
+  const strip = document.getElementById('status-strip');
+  const msg   = document.getElementById('status-msg');
+  try {
+    const h = await DS.health();
+    strip.className = 'alert alert-ok';
+    msg.innerHTML = `✓ Backend online — <strong>${h.platform}</strong> v${h.version}`;
+  } catch {
+    strip.className = 'alert alert-warn';
+    msg.innerHTML = '⚠ Backend offline — start the FastAPI server: <code>uvicorn main:app --reload</code> (see README)';
+  }
+}
+checkHealth();
+</script>
+<style>
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+</style>
+</body>
+</html>

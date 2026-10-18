@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P5 — VTOL Drone Design | Def Space 2026</title>
+<link rel="stylesheet" href="/static/design.css">
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="topbar-logo">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <polygon points="11,2 20,18 2,18" fill="none" stroke="#3D7FFF" stroke-width="1.5"/>
+        <circle cx="11" cy="11" r="2" fill="#3D7FFF"/>
+      </svg>
+      Def Space Aero Platform <span class="logo-badge">2026</span>
+    </div>
+    <span class="topbar-sep"></span>
+    <div class="topbar-meta"><strong>P5</strong> — VTOL Drone Design Portal</div>
+  </header>
+  <nav class="sidebar">
+    <div class="sidebar-label">Platform</div>
+    <a href="/index.html" class="sidebar-item"><span class="item-num">⌂</span> Dashboard</a>
+    <div class="sidebar-label">Projects</div>
+    <a href="/p1.html" class="sidebar-item"><span class="item-num">P1</span> CG &amp; Static Stability</a>
+    <a href="/p2.html" class="sidebar-item"><span class="item-num">P2</span> Neutral Point</a>
+    <a href="/p3.html" class="sidebar-item"><span class="item-num">P3</span> RC Trainer Aircraft</a>
+    <a href="/p4.html" class="sidebar-item"><span class="item-num">P4</span> Delta Wing UAV</a>
+    <a href="/p5.html" class="sidebar-item active"><span class="item-num">P5</span> VTOL Drone</a>
+    <a href="/p6.html" class="sidebar-item"><span class="item-num">P6</span> GenAI Skill Analyzer</a>
+  </nav>
+  <main class="main">
+    <div class="page-header">
+      <div class="breadcrumb">P5 / VTOL DRONE / PROPULSION &amp; FLIGHT TIME</div>
+      <h1>VTOL Drone Design Portal</h1>
+      <p class="subtitle">Hover power · Momentum theory · Gradient Boosting flight-time prediction · SciPy L-BFGS-B propeller optimiser</p>
+    </div>
+
+    <div class="tabs" id="main-tabs">
+      <div class="tab">Design Calculator</div>
+      <div class="tab">Propulsion Charts</div>
+      <div class="tab">Scipy Optimiser</div>
+      <div class="tab">ML Model</div>
+      <div class="tab">History</div>
+    </div>
+
+    <!-- TAB 1: Calculator -->
+    <div class="tab-pane" id="pane-calc">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Drone Configuration</h3>
+            <button class="btn btn-secondary btn-sm" onclick="loadDefault()">Load F450</button>
+          </div>
+          <div class="panel-body">
+            <div class="slider-row">
+              <label class="label">AUW — All-Up Weight (g)</label>
+              <input type="range" id="auw" min="200" max="5000" step="10" value="1500" oninput="sv(this,'auw-v')">
+              <span class="slider-val" id="auw-v">1500</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Number of Motors</label>
+              <input type="range" id="n-motors" min="3" max="8" step="1" value="4" oninput="sv(this,'nm-v')">
+              <span class="slider-val" id="nm-v">4</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Propeller Diameter (inches)</label>
+              <input type="range" id="prop-d" min="4" max="18" step="0.5" value="10" oninput="sv(this,'pd-v')">
+              <span class="slider-val" id="pd-v">10</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Battery — mAh</label>
+              <input type="range" id="bat-mah" min="1000" max="20000" step="100" value="4500" oninput="sv(this,'bm-v')">
+              <span class="slider-val" id="bm-v">4500</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Battery — Cell count (S)</label>
+              <input type="range" id="bat-s" min="2" max="6" step="1" value="4" oninput="sv(this,'bs-v')">
+              <span class="slider-val" id="bs-v">4</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Propulsive efficiency η</label>
+              <input type="range" id="eta" min="0.6" max="0.95" step="0.01" value="0.80" oninput="sv(this,'eta-v')">
+              <span class="slider-val" id="eta-v">0.80</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Payload weight (g)</label>
+              <input type="range" id="payload" min="0" max="2000" step="10" value="0" oninput="sv(this,'pl-v')">
+              <span class="slider-val" id="pl-v">0</span>
+            </div>
+            <button class="btn btn-primary w-full mt-4" id="calc-btn" onclick="runCalc()">Calculate Propulsion &amp; Flight Time</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>Key Results</h3></div>
+          <div class="panel-body" id="key-results">
+            <p style="color:var(--tx-3)">Configure drone and click Calculate.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: Charts -->
+    <div class="tab-pane" id="pane-charts">
+      <div class="grid-2 mb-4">
+        <div class="panel">
+          <div class="panel-header"><h3>Thrust Curve (0–100% Throttle)</h3></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="thrust-chart"></canvas></div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>Flight Time vs Payload</h3></div>
+          <div class="panel-body"><div class="chart-wrap" style="height:260px"><canvas id="ft-payload-chart"></canvas></div></div>
+        </div>
+      </div>
+      <div class="alert alert-info"><span class="alert-icon">ℹ</span>Run the Design Calculator first to populate charts.</div>
+    </div>
+
+    <!-- TAB 3: Optimiser -->
+    <div class="tab-pane" id="pane-opt">
+      <div class="panel">
+        <div class="panel-header"><h3>SciPy L-BFGS-B Propeller Optimiser</h3></div>
+        <div class="panel-body" id="opt-results">
+          <div class="alert alert-info"><span class="alert-icon">ℹ</span>Run the Design Calculator to see optimiser results.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ML -->
+    <div class="tab-pane" id="pane-ml">
+      <div id="ml-results">
+        <div class="ml-ribbon mb-4">◈ Gradient Boosting Regressor (200 estimators, depth 4) · Trained on 3000 synthetic drone records · Predicts flight time</div>
+        <div class="alert alert-info"><span class="alert-icon">ℹ</span>Run calculator to see ML prediction vs physics model comparison.</div>
+      </div>
+    </div>
+
+    <!-- TAB 5: History -->
+    <div class="tab-pane" id="pane-history">
+      <div class="panel">
+        <div class="panel-header"><h3>Design History</h3><button class="btn btn-secondary btn-sm" onclick="loadHistory()">Refresh</button></div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>AUW (g)</th><th>Motors</th><th>Prop (in)</th><th>Battery</th><th>Hover P (W)</th><th>Flight Time (min)</th><th>T/W</th></tr></thead>
+            <tbody id="history-body"><tr><td colspan="8" style="text-align:center;color:var(--tx-3);padding:20px">Click Refresh</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="/js/api.js"></script>
+<script>
+let charts = {};
+
+function sv(el, outId) {
+  document.getElementById(outId).textContent = parseFloat(el.value).toFixed(el.step.split('.')[1]?.length||0);
+}
+
+function loadDefault() {
+  // F450 quadcopter defaults
+  const set = (id, v) => { document.getElementById(id).value = v; };
+  set('auw',1500); set('n-motors',4); set('prop-d',10);
+  set('bat-mah',4500); set('bat-s',4); set('eta',0.80); set('payload',0);
+  ['auw','n-motors','prop-d','bat-mah','bat-s','eta','payload'].forEach(id => {
+    const el = document.getElementById(id);
+    const outId = { 'auw':'auw-v','n-motors':'nm-v','prop-d':'pd-v','bat-mah':'bm-v','bat-s':'bs-v','eta':'eta-v','payload':'pl-v' }[id];
+    if (outId) sv(el, outId);
+  });
+}
+
+function getParams() {
+  const g = id => parseFloat(document.getElementById(id).value);
+  return {
+    auw_g: g('auw'), n_motors: g('n-motors'), prop_diameter_in: g('prop-d'),
+    battery_mah: g('bat-mah'), battery_cells: g('bat-s'),
+    propulsive_efficiency: g('eta'), payload_g: g('payload'),
+  };
+}
+
+async function runCalc() {
+  const btn = document.getElementById('calc-btn');
+  showLoader(btn, 'Computing…');
+  try {
+    const r = await DS.p5.calculate(getParams());
+    displayResults(r);
+    drawCharts(r);
+    displayOptimiser(r);
+    displayML(r);
+    toast(`Flight time: ${fmt.n(r.flight_time_min,1)} min · Hover power: ${fmt.int(r.hover_power_w)} W`, 'ok');
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { hideLoader(btn); }
+}
+
+function displayResults(r) {
+  const twOk = r.tw_ratio >= 1.5;
+  document.getElementById('key-results').innerHTML = `
+    <div class="grid-2 mb-3">
+      <div class="card card-accent-${twOk?'green':'red'}">
+        <div class="card-title">Thrust / Weight</div>
+        <div class="card-value">${fmt.n(r.tw_ratio,2)}×</div>
+        <div class="card-sub">${twOk?'Adequate lift margin':'Insufficient — add motors/props'}</div>
+      </div>
+      <div class="card card-accent-blue">
+        <div class="card-title">Hover Power</div>
+        <div class="card-value">${fmt.int(r.hover_power_w)}<span class="card-unit">W</span></div>
+        <div class="card-sub">${fmt.n(r.hover_power_w/r.total_thrust_n,2)} W/N disc loading</div>
+      </div>
+    </div>
+    <div class="stat-row"><span class="stat-key">Total Thrust</span><span class="stat-val mono">${fmt.n(r.total_thrust_n,2)} N</span></div>
+    <div class="stat-row"><span class="stat-key">Thrust per Motor</span><span class="stat-val mono">${fmt.n(r.thrust_per_motor_n,3)} N</span></div>
+    <div class="stat-row"><span class="stat-key">Hover Throttle</span><span class="stat-val mono">${fmt.n(r.hover_throttle_pct,1)}%</span></div>
+    <div class="stat-row"><span class="stat-key">Battery Energy</span><span class="stat-val mono">${fmt.n(r.battery_wh,2)} Wh</span></div>
+    <div class="stat-row"><span class="stat-key">Flight Time (physics)</span><span class="stat-val mono green">${fmt.n(r.flight_time_min,1)} min</span></div>
+    <div class="stat-row"><span class="stat-key">Flight Time (ML)</span><span class="stat-val mono teal">${fmt.n(r.ml_flight_time_min,1)} min</span></div>`;
+}
+
+function drawCharts(r) {
+  dsChartDefaults();
+  const baseOpts = (xt,yt) => ({
+    responsive:true, maintainAspectRatio:false,
+    plugins:{legend:{position:'top'}},
+    scales:{ x:{grid:{color:'#1E2840'},title:{display:true,text:xt}}, y:{grid:{color:'#1E2840'},title:{display:true,text:yt}} }
+  });
+
+  if(charts.thrust) charts.thrust.destroy();
+  charts.thrust = new Chart(document.getElementById('thrust-chart').getContext('2d'), {
+    type:'line',
+    data:{
+      labels: r.thrust_curve.map(p=>p.throttle_pct+'%'),
+      datasets:[{
+        label:'Total Thrust (N)', data: r.thrust_curve.map(p=>p.thrust_n),
+        borderColor:'#3D7FFF', backgroundColor:'rgba(61,127,255,.1)', fill:true, tension:0.4, pointRadius:0
+      },{
+        label:'Hover point', data: r.thrust_curve.map(p => p.throttle_pct===Math.round(r.hover_throttle_pct)?r.total_thrust_n:null),
+        borderColor:'#F0A500', pointRadius:6, pointBackgroundColor:'#F0A500',
+        showLine:false
+      }]
+    },
+    options: baseOpts('Throttle (%)','Thrust (N)')
+  });
+
+  if(charts.ftPayload) charts.ftPayload.destroy();
+  charts.ftPayload = new Chart(document.getElementById('ft-payload-chart').getContext('2d'), {
+    type:'line',
+    data:{
+      labels: r.flight_time_vs_payload.map(p=>p.payload_g+'g'),
+      datasets:[{
+        label:'Flight Time (min)', data: r.flight_time_vs_payload.map(p=>p.flight_time_min),
+        borderColor:'#00C5B0', backgroundColor:'rgba(0,197,176,.1)', fill:true, tension:0.3, pointRadius:0
+      }]
+    },
+    options: baseOpts('Payload (g)','Flight Time (min)')
+  });
+
+  document.querySelectorAll('.tab')[1].click();
+}
+
+function displayOptimiser(r) {
+  const o = r.optimised;
+  document.getElementById('opt-results').innerHTML = `
+    <div class="ml-ribbon mb-4">◈ scipy.optimize.minimize · L-BFGS-B · Optimising prop diameter (5–15 in) to maximise flight time</div>
+    <div class="grid-2">
+      <div>
+        <div class="section-title">Current Design</div>
+        <div class="stat-row"><span class="stat-key">Prop Diameter</span><span class="stat-val mono">${fmt.n(r.prop_diameter_in,1)} in</span></div>
+        <div class="stat-row"><span class="stat-key">Hover Power</span><span class="stat-val mono">${fmt.int(r.hover_power_w)} W</span></div>
+        <div class="stat-row"><span class="stat-key">Flight Time</span><span class="stat-val mono">${fmt.n(r.flight_time_min,2)} min</span></div>
+      </div>
+      <div>
+        <div class="section-title">Optimised Design</div>
+        <div class="stat-row"><span class="stat-key">Optimal Prop Diameter</span><span class="stat-val mono green">${fmt.n(o.optimal_prop_in,2)} in</span></div>
+        <div class="stat-row"><span class="stat-key">Optimal Hover Power</span><span class="stat-val mono">${fmt.int(o.optimal_power_w)} W</span></div>
+        <div class="stat-row"><span class="stat-key">Optimal Flight Time</span><span class="stat-val mono green">${fmt.n(o.optimal_flight_time_min,2)} min</span></div>
+        <div class="stat-row"><span class="stat-key">Improvement</span><span class="stat-val mono ${o.improvement_pct>0?'green':'red'}">${o.improvement_pct>0?'+':''}${fmt.n(o.improvement_pct,1)}%</span></div>
+      </div>
+    </div>
+    <div class="alert alert-${o.improvement_pct>0?'ok':'info'} mt-4">
+      <span class="alert-icon">${o.improvement_pct>0?'✓':'ℹ'}</span>
+      ${o.improvement_pct>1
+        ? `Switching from ${fmt.n(r.prop_diameter_in,1)}" to ${fmt.n(o.optimal_prop_in,2)}" propellers improves flight time by +${fmt.n(o.improvement_pct,1)}% via better disc loading.`
+        : `Current prop diameter (${fmt.n(r.prop_diameter_in,1)}") is already near-optimal for this AUW and motor count.`}
+    </div>`;
+}
+
+function displayML(r) {
+  document.getElementById('ml-results').innerHTML = `
+    <div class="ml-ribbon mb-4">◈ Gradient Boosting Regressor (200 estimators, depth 4) · R² = <strong>${r.ml_accuracy_pct}%</strong> · 3000 training samples</div>
+    <div class="grid-4">
+      <div class="card card-accent-teal">
+        <div class="card-title">ML Flight Time</div>
+        <div class="card-value">${fmt.n(r.ml_flight_time_min,1)}<span class="card-unit">min</span></div>
+        <div class="card-sub">GBR prediction</div>
+      </div>
+      <div class="card card-accent-blue">
+        <div class="card-title">Physics Model</div>
+        <div class="card-value">${fmt.n(r.flight_time_min,1)}<span class="card-unit">min</span></div>
+        <div class="card-sub">Momentum theory</div>
+      </div>
+      <div class="card card-accent-amber">
+        <div class="card-title">Prediction Error</div>
+        <div class="card-value">${fmt.n(Math.abs(r.ml_flight_time_min - r.flight_time_min)/r.flight_time_min*100,1)}<span class="card-unit">%</span></div>
+        <div class="card-sub">|ML − Physics| / Physics</div>
+      </div>
+      <div class="card card-accent-green">
+        <div class="card-title">Model R²</div>
+        <div class="card-value">${r.ml_accuracy_pct}<span class="card-unit">%</span></div>
+        <div class="card-sub">Regression fit quality</div>
+      </div>
+    </div>
+    <div class="section-title mt-4">Model Features</div>
+    <div class="panel mt-1">
+      <div class="panel-body">
+        <div class="stat-row"><span class="stat-key">Algorithm</span><span class="stat-val">GradientBoostingRegressor</span></div>
+        <div class="stat-row"><span class="stat-key">Estimators</span><span class="stat-val">200</span></div>
+        <div class="stat-row"><span class="stat-key">Max Depth</span><span class="stat-val">4</span></div>
+        <div class="stat-row"><span class="stat-key">Features</span><span class="stat-val">AUW, motor count, prop diameter, battery mAh, battery cells</span></div>
+        <div class="stat-row"><span class="stat-key">Target</span><span class="stat-val">Flight time (minutes)</span></div>
+      </div>
+    </div>`;
+}
+
+async function loadHistory() {
+  const body = document.getElementById('history-body');
+  try {
+    const rows = await DS.p5.history();
+    if (!rows.length) { body.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--tx-3);padding:20px">No records.</td></tr>'; return; }
+    body.innerHTML = rows.map(r => `
+      <tr>
+        <td class="mono">#${r.id}</td>
+        <td class="mono">${r.auw_g}</td>
+        <td class="mono">${r.n_motors}</td>
+        <td class="mono">${fmt.n(r.prop_diameter_in,1)}"</td>
+        <td class="mono">${r.battery_mah}mAh ${r.battery_cells}S</td>
+        <td class="mono">${fmt.int(r.hover_power_w)}</td>
+        <td class="mono green">${fmt.n(r.flight_time_min,1)}</td>
+        <td class="mono ${r.tw_ratio>=1.5?'green':'red'}">${fmt.n(r.tw_ratio,2)}×</td>
+      </tr>`).join('');
+  } catch(e) { body.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:20px">${e.message}</td></tr>`; }
+}
+
+initTabs('#main-tabs');
+loadDefault();
+document.querySelectorAll('.tab')[4].addEventListener('click', loadHistory);
+</script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P6 — GenAI Skill Analyzer | Def Space 2026</title>
+<link rel="stylesheet" href="/static/design.css">
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="topbar-logo">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <polygon points="11,2 20,18 2,18" fill="none" stroke="#3D7FFF" stroke-width="1.5"/>
+        <circle cx="11" cy="11" r="2" fill="#3D7FFF"/>
+      </svg>
+      Def Space Aero Platform <span class="logo-badge">2026</span>
+    </div>
+    <span class="topbar-sep"></span>
+    <div class="topbar-meta"><strong>P6</strong> — GenAI NotebookLM Skill Gap Analyzer</div>
+  </header>
+  <nav class="sidebar">
+    <div class="sidebar-label">Platform</div>
+    <a href="/index.html" class="sidebar-item"><span class="item-num">⌂</span> Dashboard</a>
+    <div class="sidebar-label">Projects</div>
+    <a href="/p1.html" class="sidebar-item"><span class="item-num">P1</span> CG &amp; Static Stability</a>
+    <a href="/p2.html" class="sidebar-item"><span class="item-num">P2</span> Neutral Point</a>
+    <a href="/p3.html" class="sidebar-item"><span class="item-num">P3</span> RC Trainer Aircraft</a>
+    <a href="/p4.html" class="sidebar-item"><span class="item-num">P4</span> Delta Wing UAV</a>
+    <a href="/p5.html" class="sidebar-item"><span class="item-num">P5</span> VTOL Drone</a>
+    <a href="/p6.html" class="sidebar-item active"><span class="item-num">P6</span> GenAI Skill Analyzer</a>
+  </nav>
+  <main class="main">
+    <div class="page-header">
+      <div class="breadcrumb">P6 / GENAI / NOTEBOOKLM / SKILL GAP ANALYSIS</div>
+      <h1>GenAI &amp; NotebookLM — Skill Gap Analyzer</h1>
+      <p class="subtitle">TF-IDF cosine similarity · JD↔Resume matching · Cyber skill extraction · 30-day learning plan</p>
+    </div>
+
+    <div class="tabs" id="main-tabs">
+      <div class="tab">Analyze Skills</div>
+      <div class="tab">Skill Gap Table</div>
+      <div class="tab">Learning Plan</div>
+      <div class="tab">Interview Prep</div>
+      <div class="tab">History</div>
+    </div>
+
+    <!-- TAB 1: Input -->
+    <div class="tab-pane" id="pane-input">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Job Description</h3>
+            <button class="btn btn-secondary btn-sm" onclick="loadDemo()">Load Demo</button>
+          </div>
+          <div class="panel-body">
+            <div class="field">
+              <label class="label">Role Title</label>
+              <input class="input" id="role-title" type="text" value="Cybersecurity Analyst" placeholder="e.g. SOC Analyst, Penetration Tester">
+            </div>
+            <div class="field">
+              <label class="label">Job Description Text</label>
+              <textarea class="input" id="jd-text" rows="10" placeholder="Paste the full JD here…"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>Your Resume / Profile</h3></div>
+          <div class="panel-body">
+            <div class="field">
+              <label class="label">Resume or Skills Summary</label>
+              <textarea class="input" id="resume-text" rows="13" placeholder="Paste your resume, LinkedIn summary, or skills list…"></textarea>
+            </div>
+            <button class="btn btn-primary w-full" id="analyze-btn" onclick="runAnalysis()">Analyse Skill Gap</button>
+          </div>
+        </div>
+      </div>
+      <div id="similarity-strip" style="margin-top:12px"></div>
+    </div>
+
+    <!-- TAB 2: Skill Gap Table -->
+    <div class="tab-pane" id="pane-skills">
+      <div id="skills-content">
+        <div class="alert alert-info"><span class="alert-icon">ℹ</span>Run the analyzer first.</div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Learning Plan -->
+    <div class="tab-pane" id="pane-plan">
+      <div id="plan-content">
+        <div class="alert alert-info"><span class="alert-icon">ℹ</span>Run the analyzer first.</div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Interview Prep -->
+    <div class="tab-pane" id="pane-interview">
+      <div id="interview-content">
+        <div class="alert alert-info"><span class="alert-icon">ℹ</span>Run the analyzer first.</div>
+      </div>
+    </div>
+
+    <!-- TAB 5: History -->
+    <div class="tab-pane" id="pane-history">
+      <div class="panel">
+        <div class="panel-header"><h3>Analysis History</h3><button class="btn btn-secondary btn-sm" onclick="loadHistory()">Refresh</button></div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Role</th><th>Similarity</th><th>Skills Matched</th><th>Top Gap Skill</th><th>Time</th></tr></thead>
+            <tbody id="history-body"><tr><td colspan="6" style="text-align:center;color:var(--tx-3);padding:20px">Click Refresh</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="/js/api.js"></script>
+<script>
+const DEMO_JD = `We are looking for a Cybersecurity Analyst to join our Security Operations Center (SOC).
+
+Requirements:
+- Strong knowledge of network security fundamentals, firewalls, IDS/IPS
+- Experience with SIEM tools (Splunk, IBM QRadar)
+- Hands-on experience with penetration testing and vulnerability assessment
+- Knowledge of Python scripting for security automation
+- Familiarity with ethical hacking techniques and tools (Nmap, Metasploit, Wireshark)
+- Understanding of cryptography and PKI
+- Experience with incident response and digital forensics
+- Knowledge of cloud security (AWS/Azure security configurations)
+- Linux system administration experience
+- Awareness of OWASP Top 10 and web application security
+- Certifications preferred: CEH, CompTIA Security+, OSCP
+
+Nice to have:
+- Experience with SOAR platforms
+- Knowledge of threat intelligence and threat hunting
+- Familiarity with zero-trust architecture`;
+
+const DEMO_RESUME = `Nitish Kumar Kannaujiya
+B.Tech CSE (Cybersecurity) — Central University of Jammu
+
+Skills & Technologies:
+- Programming: Python, Java, C++, JavaScript, HTML/CSS
+- Networking: TCP/IP, DNS, HTTP/HTTPS, basic Wireshark packet analysis
+- Operating Systems: Linux (Ubuntu, Kali), Windows Server
+- Security Tools: Nmap port scanning (beginner), Kali Linux tools exploration
+- Web Development: Full-stack (FastAPI, SQLite, Vanilla JS)
+- Databases: SQLite, MySQL basics
+- Drone & Aerodynamics: UAV design, VTOL systems, NumPy/SciPy aerodynamic analysis
+- AI/ML: scikit-learn, TF-IDF, Gradient Boosting, MLP Neural Networks
+- Certifications: Pursuing CompTIA Security+, completed cybersecurity course on Coursera
+- Academic Projects: Drone platform with FastAPI backend, RC aircraft DBT, aerodynamic analysis tools`;
+
+async function runAnalysis() {
+  const jd = document.getElementById('jd-text').value.trim();
+  const resume = document.getElementById('resume-text').value.trim();
+  const role = document.getElementById('role-title').value.trim() || 'Unknown Role';
+  if (!jd || !resume) { toast('Paste both JD and resume text', 'warn'); return; }
+
+  const btn = document.getElementById('analyze-btn');
+  showLoader(btn, 'Analyzing…');
+  try {
+    const r = await DS.p6.analyse({ role_title: role, jd_text: jd, resume_text: resume });
+    displaySimilarity(r);
+    displaySkills(r);
+    displayPlan(r);
+    displayInterview(r);
+    toast(`Match: ${fmt.n(r.similarity_score,1)}% · ${r.skills_you_have.length} skills found`, 'ok');
+    document.querySelectorAll('.tab')[1].click();
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { hideLoader(btn); }
+}
+
+function displaySimilarity(r) {
+  const pct = r.similarity_score;
+  const color = pct >= 65 ? '#22C55E' : pct >= 40 ? '#F0A500' : '#F04040';
+  const grade = pct >= 75 ? 'Strong Match' : pct >= 55 ? 'Moderate Match' : pct >= 35 ? 'Developing Match' : 'Early Stage';
+  document.getElementById('similarity-strip').innerHTML = `
+    <div class="ml-ribbon" style="border-color:${color}">
+      ◈ TF-IDF Cosine Similarity · JD↔Resume Match Score: <strong style="color:${color}">${fmt.n(pct,1)}%</strong> · ${grade}
+      <div class="progress-track" style="margin-top:6px;background:#0D1525">
+        <div class="progress-fill" style="width:${pct}%;background:${color};transition:width .8s ease"></div>
+      </div>
+    </div>`;
+}
+
+function displaySkills(r) {
+  const renderSection = (title, skills, bType) => {
+    if (!skills.length) return '';
+    return `<div class="section-title">${title}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+        ${skills.map(s=>`<span class="badge badge-${bType}">${s}</span>`).join('')}
+      </div>`;
+  };
+
+  document.getElementById('skills-content').innerHTML = `
+    <div class="grid-2 mb-4">
+      <div class="card card-accent-green">
+        <div class="card-title">Skills You Have</div>
+        <div class="card-value">${r.skills_you_have.length}</div>
+        <div class="card-sub">Matched in your resume</div>
+      </div>
+      <div class="card card-accent-red">
+        <div class="card-title">Skills to Learn</div>
+        <div class="card-value">${r.skills_to_learn.length}</div>
+        <div class="card-sub">Priority gap skills</div>
+      </div>
+    </div>
+    ${renderSection('✓ Skills You Have', r.skills_you_have, 'green')}
+    ${renderSection('▲ High Priority — Learn Now', r.skills_to_learn_high, 'red')}
+    ${renderSection('→ Medium Priority — Demonstrate', r.skills_to_demonstrate, 'amber')}
+    ${renderSection('○ Lower Priority', r.skills_to_learn_low, 'blue')}
+    ${renderSection('— Optional / Nice-to-Have', r.skills_to_skip, 'teal')}
+    <div class="section-title mt-2">Full Skills Table</div>
+    <div class="panel mt-1">
+      <div class="panel-body" style="padding:0;max-height:380px;overflow-y:auto">
+        <table class="data-table">
+          <thead><tr><th>Skill</th><th>In JD?</th><th>In Resume?</th><th>Priority</th><th>Action</th></tr></thead>
+          <tbody>${r.all_skills.map(s=>`
+            <tr>
+              <td>${s.name}</td>
+              <td>${s.in_jd ? badge('Yes','green') : badge('No','amber')}</td>
+              <td>${s.in_resume ? badge('Yes','green') : badge('No','red')}</td>
+              <td>${badge(s.priority, s.priority==='critical'?'red':s.priority==='high'?'amber':'blue')}</td>
+              <td style="color:var(--tx-2)">${s.action}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function displayPlan(r) {
+  const weeks = r.thirty_day_plan;
+  document.getElementById('plan-content').innerHTML = `
+    <div class="ml-ribbon mb-4">◈ Personalised 30-day learning plan based on your skill gap analysis</div>
+    ${weeks.map((w,i) => `
+      <div class="panel mb-4">
+        <div class="panel-header">
+          <h3>Week ${i+1} — ${w.focus}</h3>
+          <span class="badge badge-${['blue','teal','amber','green'][i]}">${w.priority} priority</span>
+        </div>
+        <div class="panel-body">
+          <p style="color:var(--tx-2);margin-bottom:10px">${w.description}</p>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${w.tasks.map(t=>`
+              <div class="flex" style="gap:8px;align-items:start">
+                <span style="color:var(--tx-3);min-width:16px">▸</span>
+                <span style="color:var(--tx-1)">${t}</span>
+              </div>`).join('')}
+          </div>
+          ${w.resources ? `<div class="mt-3"><span class="text-xs" style="color:var(--tx-3)">Resources: </span><span class="text-xs" style="color:var(--tx-2)">${w.resources.join(' · ')}</span></div>` : ''}
+        </div>
+      </div>`).join('')}`;
+}
+
+function displayInterview(r) {
+  document.getElementById('interview-content').innerHTML = `
+    <div class="ml-ribbon mb-4">◈ Interview questions generated based on role: <strong>${r.role_title}</strong></div>
+    <div class="panel">
+      <div class="panel-header"><h3>Likely Interview Questions</h3></div>
+      <div class="panel-body">
+        ${r.interview_questions.map((q,i) => `
+          <div style="padding:12px 0;border-bottom:1px solid var(--brd)">
+            <div class="flex" style="gap:10px;align-items:start;margin-bottom:6px">
+              <span class="mono" style="color:var(--tx-3);min-width:24px">Q${i+1}</span>
+              <strong style="color:var(--tx-1)">${q.question}</strong>
+            </div>
+            <div style="padding-left:34px">
+              <div class="text-xs" style="color:var(--tx-3);margin-bottom:4px">Topic: ${badge(q.topic,'blue')}</div>
+              <div style="font-size:13px;color:var(--tx-2)">${q.guidance}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="panel mt-4">
+      <div class="panel-header"><h3>3 Audience-Tuned Explanations of UAV Stability</h3></div>
+      <div class="panel-body">
+        ${r.uav_explanations ? r.uav_explanations.map(e=>`
+          <div style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--brd)">
+            <div style="font-weight:600;color:var(--tx-1);margin-bottom:4px">${badge(e.audience,'teal')} ${e.title}</div>
+            <p style="font-size:13px;color:var(--tx-2)">${e.explanation}</p>
+          </div>`).join('') : ''}
+      </div>
+    </div>`;
+}
+
+function loadDemo() {
+  document.getElementById('jd-text').value = DEMO_JD;
+  document.getElementById('resume-text').value = DEMO_RESUME;
+  toast('Demo data loaded', 'info');
+}
+
+async function loadHistory() {
+  const body = document.getElementById('history-body');
+  try {
+    const rows = await DS.p6.history();
+    if (!rows.length) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--tx-3);padding:20px">No records.</td></tr>'; return; }
+    body.innerHTML = rows.map(r => `
+      <tr>
+        <td class="mono">#${r.id}</td>
+        <td>${r.role_title}</td>
+        <td class="mono ${r.similarity_score>=60?'green':r.similarity_score>=40?'':'red'}">${fmt.n(r.similarity_score,1)}%</td>
+        <td class="mono">${r.skills_matched}</td>
+        <td style="color:var(--tx-2)">${r.top_gap_skill||'—'}</td>
+        <td class="text-xs" style="color:var(--tx-3)">${r.created_at ? new Date(r.created_at).toLocaleString() : '—'}</td>
+      </tr>`).join('');
+  } catch(e) { body.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:20px">${e.message}</td></tr>`; }
+}
+
+initTabs('#main-tabs');
+document.querySelectorAll('.tab')[4].addEventListener('click', loadHistory);
+</script>
+</body>
+</html>

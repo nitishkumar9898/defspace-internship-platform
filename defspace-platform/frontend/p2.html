@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P2 — Neutral Point Analysis | Def Space 2026</title>
+<link rel="stylesheet" href="/static/design.css">
+</head>
+<body>
+<div class="shell">
+  <header class="topbar">
+    <div class="topbar-logo">
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <polygon points="11,2 20,18 2,18" fill="none" stroke="#3D7FFF" stroke-width="1.5"/>
+        <circle cx="11" cy="11" r="2" fill="#3D7FFF"/>
+      </svg>
+      Def Space Aero Platform <span class="logo-badge">2026</span>
+    </div>
+    <span class="topbar-sep"></span>
+    <div class="topbar-meta"><strong>P2</strong> — Neutral Point &amp; Stability Analysis</div>
+  </header>
+  <nav class="sidebar">
+    <div class="sidebar-label">Platform</div>
+    <a href="/index.html" class="sidebar-item"><span class="item-num">⌂</span> Dashboard</a>
+    <div class="sidebar-label">Projects</div>
+    <a href="/p1.html" class="sidebar-item"><span class="item-num">P1</span> CG &amp; Static Stability</a>
+    <a href="/p2.html" class="sidebar-item active"><span class="item-num">P2</span> Neutral Point</a>
+    <a href="/p3.html" class="sidebar-item"><span class="item-num">P3</span> RC Trainer Aircraft</a>
+    <a href="/p4.html" class="sidebar-item"><span class="item-num">P4</span> Delta Wing UAV</a>
+    <a href="/p5.html" class="sidebar-item"><span class="item-num">P5</span> VTOL Drone</a>
+    <a href="/p6.html" class="sidebar-item"><span class="item-num">P6</span> GenAI Skill Analyzer</a>
+  </nav>
+  <main class="main">
+    <div class="page-header">
+      <div class="breadcrumb">P2 / WING-TAIL CONFIGURATION / NEUTRAL POINT</div>
+      <h1>Neutral Point &amp; Static Stability Analysis</h1>
+      <p class="subtitle">Wing-tail strip theory NP calculation · PolynomialFeatures + LinearRegression ML model · Stability charts</p>
+    </div>
+
+    <div class="tabs" id="main-tabs">
+      <div class="tab">Calculator</div>
+      <div class="tab">Charts</div>
+      <div class="tab">ML Model Info</div>
+      <div class="tab">History</div>
+    </div>
+
+    <!-- TAB 1: Calculator -->
+    <div class="tab-pane" id="pane-calc">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header">
+            <h3>Wing Geometry</h3>
+            <button class="btn btn-secondary btn-sm" onclick="loadDefault()">Load Default</button>
+          </div>
+          <div class="panel-body">
+            <div class="slider-row">
+              <label class="label">Wing Area (S<sub>w</sub>) — m²</label>
+              <input type="range" id="wing-area" min="0.1" max="2.0" step="0.01" value="0.38" oninput="syncVal(this,'wing-area-val')">
+              <span class="slider-val" id="wing-area-val">0.38</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Wing MAC — m</label>
+              <input type="range" id="wing-mac" min="0.05" max="0.5" step="0.005" value="0.23" oninput="syncVal(this,'wing-mac-val')">
+              <span class="slider-val" id="wing-mac-val">0.23</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Wing AC fraction (x<sub>ac</sub>/c)</label>
+              <input type="range" id="wing-ac" min="0.20" max="0.35" step="0.005" value="0.25" oninput="syncVal(this,'wing-ac-val')">
+              <span class="slider-val" id="wing-ac-val">0.25</span>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>Tail Configuration</h3></div>
+          <div class="panel-body">
+            <div class="slider-row">
+              <label class="label">Tail Area (S<sub>t</sub>) — m²</label>
+              <input type="range" id="tail-area" min="0.02" max="0.5" step="0.005" value="0.09" oninput="syncVal(this,'tail-area-val')">
+              <span class="slider-val" id="tail-area-val">0.09</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Tail moment arm (l<sub>t</sub>) — m</label>
+              <input type="range" id="tail-moment" min="0.2" max="2.0" step="0.01" value="0.62" oninput="syncVal(this,'tail-moment-val')">
+              <span class="slider-val" id="tail-moment-val">0.62</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">Tail efficiency (η<sub>t</sub>)</label>
+              <input type="range" id="tail-eff" min="0.70" max="1.00" step="0.01" value="0.90" oninput="syncVal(this,'tail-eff-val')">
+              <span class="slider-val" id="tail-eff-val">0.90</span>
+            </div>
+            <div class="slider-row">
+              <label class="label">CG position (x<sub>cg</sub>/c)</label>
+              <input type="range" id="cg-frac" min="0.15" max="0.45" step="0.005" value="0.30" oninput="syncVal(this,'cg-frac-val')">
+              <span class="slider-val" id="cg-frac-val">0.30</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="margin:12px 0">
+        <button class="btn btn-primary" id="calc-btn" onclick="runCalc()" style="width:220px">Calculate Neutral Point</button>
+      </div>
+      <div id="result-strip"></div>
+    </div>
+
+    <!-- TAB 2: Charts -->
+    <div class="tab-pane" id="pane-charts">
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-header"><h3>NP vs Tail Separation</h3></div>
+          <div class="panel-body">
+            <div class="chart-wrap" style="height:280px"><canvas id="np-sep-chart"></canvas></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><h3>Static Margin vs CG Position</h3></div>
+          <div class="panel-body">
+            <div class="chart-wrap" style="height:280px"><canvas id="sm-cg-chart"></canvas></div>
+          </div>
+        </div>
+      </div>
+      <div class="alert alert-info mt-2"><span class="alert-icon">ℹ</span>Run the calculator first to populate charts.</div>
+    </div>
+
+    <!-- TAB 3: ML Model -->
+    <div class="tab-pane" id="pane-model">
+      <div class="panel">
+        <div class="panel-header"><h3>ML Model — Polynomial Regression</h3></div>
+        <div class="panel-body" id="model-info-body">
+          <button class="btn btn-secondary btn-sm" onclick="loadModelInfo()">Load model info</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: History -->
+    <div class="tab-pane" id="pane-history">
+      <div class="panel">
+        <div class="panel-header">
+          <h3>Calculation History</h3>
+          <button class="btn btn-secondary btn-sm" onclick="loadHistory()">Refresh</button>
+        </div>
+        <div class="panel-body" style="padding:0">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Wing Area</th><th>Tail Area</th><th>l<sub>t</sub> (m)</th><th>NP (x<sub>np</sub>/c)</th><th>SM (%)</th><th>Stable</th></tr></thead>
+            <tbody id="history-body"><tr><td colspan="7" style="text-align:center;color:var(--tx-3);padding:20px">Click Refresh</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="/js/api.js"></script>
+<script>
+let npChart = null, smChart = null;
+
+function syncVal(el, outId) {
+  document.getElementById(outId).textContent = parseFloat(el.value).toFixed(el.step.length > 2 ? 3 : 2);
+}
+
+function loadDefault() {
+  const set = (id, v) => { document.getElementById(id).value = v; };
+  set('wing-area', 0.38); set('wing-mac', 0.23); set('wing-ac', 0.25);
+  set('tail-area', 0.09); set('tail-moment', 0.62); set('tail-eff', 0.90); set('cg-frac', 0.30);
+  document.querySelectorAll('input[type=range]').forEach(el => {
+    const outId = el.id + '-val';
+    if (document.getElementById(outId))
+      document.getElementById(outId).textContent = parseFloat(el.value).toFixed(3);
+  });
+}
+
+function getParams() {
+  const g = id => parseFloat(document.getElementById(id).value);
+  return {
+    wing_area_m2: g('wing-area'),
+    wing_mac_m: g('wing-mac'),
+    wing_ac_fraction: g('wing-ac'),
+    tail_area_m2: g('tail-area'),
+    tail_moment_arm_m: g('tail-moment'),
+    tail_efficiency: g('tail-eff'),
+    cg_fraction: g('cg-frac'),
+  };
+}
+
+async function runCalc() {
+  const btn = document.getElementById('calc-btn');
+  showLoader(btn);
+  try {
+    const r = await DS.p2.calculate(getParams());
+    displayResult(r);
+    drawCharts(r);
+    toast('Neutral point calculated', 'ok');
+  } catch(e) { toast('Error: ' + e.message, 'err'); }
+  finally { hideLoader(btn); }
+}
+
+function displayResult(r) {
+  const stable = r.is_stable;
+  document.getElementById('result-strip').innerHTML = `
+    <div class="ml-ribbon">◈ ML (PolyReg deg-2) · R² = <strong>${r.ml_accuracy_pct}%</strong> · ML NP prediction: <strong>${fmt.n(r.ml_np_prediction,4)}</strong></div>
+    <div class="grid-4 mt-2">
+      <div class="card card-accent-blue">
+        <div class="card-title">Neutral Point</div>
+        <div class="card-value">${fmt.n(r.neutral_point_fraction,4)}</div>
+        <div class="card-sub">x<sub>np</sub>/c fraction</div>
+      </div>
+      <div class="card card-accent-${stable?'green':'red'}">
+        <div class="card-title">Static Margin</div>
+        <div class="card-value">${fmt.n(r.static_margin_pct,1)}<span class="card-unit">%</span></div>
+        <div class="card-sub">${r.stability_grade}</div>
+      </div>
+      <div class="card card-accent-teal">
+        <div class="card-title">Tail Volume</div>
+        <div class="card-value">${fmt.n(r.tail_volume_ratio,4)}</div>
+        <div class="card-sub">V<sub>H</sub> = S<sub>t</sub>l<sub>t</sub>/S<sub>w</sub>MAC</div>
+      </div>
+      <div class="card card-accent-amber">
+        <div class="card-title">Status</div>
+        <div class="card-value" style="font-size:16px">${stable?'✓ OK':'✗ FAIL'}</div>
+        <div class="card-sub">${stable?'Positive SM — stable':'Negative SM — unstable'}</div>
+      </div>
+    </div>
+    <div class="alert alert-${stable?'ok':'err'} mt-2">
+      <span class="alert-icon">${stable?'✓':'✗'}</span>
+      NP = ${fmt.n(r.neutral_point_fraction,4)}·c — CG at ${fmt.n(r.cg_fraction,3)}·c —
+      SM = <strong>${fmt.n(r.static_margin_pct,2)}%</strong> MAC.
+      ${stable ? 'Aircraft statically stable; disturbance generates nose-down restoring moment.'
+               : 'CG is aft of NP. Move CG forward or increase tail area/moment arm.'}
+    </div>`;
+}
+
+function drawCharts(r) {
+  dsChartDefaults();
+  const darkOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'top' } },
+    scales: {
+      x: { grid: { color: '#1E2840' } },
+      y: { grid: { color: '#1E2840' } }
+    }
+  };
+
+  if (npChart) npChart.destroy();
+  npChart = new Chart(document.getElementById('np-sep-chart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: r.np_vs_separation.map(p => p.lt_m.toFixed(2)),
+      datasets: [{
+        label: 'NP (x_np/c)',
+        data: r.np_vs_separation.map(p => p.np_fraction),
+        borderColor: '#3D7FFF', backgroundColor: 'rgba(61,127,255,.12)',
+        tension: 0.4, fill: true, pointRadius: 0,
+      }, {
+        label: 'Current CG',
+        data: r.np_vs_separation.map(() => r.cg_fraction),
+        borderColor: '#F0A500', borderDash: [5,4], pointRadius: 0,
+      }]
+    },
+    options: { ...darkOpts, scales: { x: { ...darkOpts.scales.x, title: { display:true, text:'Tail moment arm l_t (m)' } }, y: { ...darkOpts.scales.y, title: { display:true, text:'x_np/c' } } } }
+  });
+
+  if (smChart) smChart.destroy();
+  smChart = new Chart(document.getElementById('sm-cg-chart').getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: r.sm_vs_cg.map(p => p.cg_fraction.toFixed(3)),
+      datasets: [{
+        label: 'Static Margin (%)',
+        data: r.sm_vs_cg.map(p => p.sm_pct),
+        borderColor: '#00C5B0', backgroundColor: 'rgba(0,197,176,.12)',
+        tension: 0.3, fill: true, pointRadius: 0,
+      }, {
+        label: 'Neutral boundary (SM=0)',
+        data: r.sm_vs_cg.map(() => 0),
+        borderColor: '#F04040', borderDash: [5,4], pointRadius: 0,
+      }]
+    },
+    options: { ...darkOpts, scales: { x: { ...darkOpts.scales.x, title: { display:true, text:'CG fraction (x_cg/c)' } }, y: { ...darkOpts.scales.y, title: { display:true, text:'Static Margin (%)' } } } }
+  });
+
+  // Switch to charts tab to show them
+  document.querySelectorAll('.tab')[1].click();
+}
+
+async function loadModelInfo() {
+  try {
+    const info = await DS.p2.modelInfo();
+    document.getElementById('model-info-body').innerHTML = `
+      <div class="ml-ribbon mb-4">◈ PolynomialFeatures (degree=2) + LinearRegression — Trained on ${info.training_samples} synthetic aerodynamic samples</div>
+      <div class="grid-2">
+        <div>
+          <div class="stat-row"><span class="stat-key">Algorithm</span><span class="stat-val">${info.algorithm}</span></div>
+          <div class="stat-row"><span class="stat-key">Polynomial Degree</span><span class="stat-val">${info.poly_degree}</span></div>
+          <div class="stat-row"><span class="stat-key">Training Samples</span><span class="stat-val">${info.training_samples}</span></div>
+          <div class="stat-row"><span class="stat-key">R² Score</span><span class="stat-val green">${info.r2_score}%</span></div>
+        </div>
+        <div>
+          <div class="stat-row"><span class="stat-key">Features</span><span class="stat-val">area_ratio × moment_arm</span></div>
+          <div class="stat-row"><span class="stat-key">Target</span><span class="stat-val">Neutral point fraction (x_np/c)</span></div>
+          <div class="stat-row"><span class="stat-key">Validation</span><span class="stat-val">80/20 train-test split</span></div>
+        </div>
+      </div>`;
+  } catch(e) { toast('Model info error: ' + e.message, 'err'); }
+}
+
+async function loadHistory() {
+  const body = document.getElementById('history-body');
+  try {
+    const rows = await DS.p2.history();
+    if (!rows.length) { body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--tx-3);padding:20px">No records yet.</td></tr>'; return; }
+    body.innerHTML = rows.map(r => `
+      <tr>
+        <td class="mono">#${r.id}</td>
+        <td class="mono">${fmt.n(r.wing_area,3)}</td>
+        <td class="mono">${fmt.n(r.tail_area,3)}</td>
+        <td class="mono">${fmt.n(r.tail_moment_arm,3)}</td>
+        <td class="mono">${fmt.n(r.neutral_point,4)}</td>
+        <td class="mono ${r.static_margin>=0?'green':'red'}">${fmt.n(r.static_margin,2)}%</td>
+        <td>${badge(r.is_stable?'Stable':'Unstable', r.is_stable?'green':'red')}</td>
+      </tr>`).join('');
+  } catch(e) { body.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:20px">${e.message}</td></tr>`; }
+}
+
+initTabs('#main-tabs');
+loadDefault();
+document.querySelectorAll('.tab')[2].addEventListener('click', loadModelInfo);
+document.querySelectorAll('.tab')[3].addEventListener('click', loadHistory);
+</script>
+</body>
+</html>
